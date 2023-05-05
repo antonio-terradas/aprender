@@ -1,24 +1,41 @@
 steps:
   # Install NPM packages
-  - run: npm install --platform=macos-arm64
+  - name: 'gcr.io/cloud-builders/npm'
+    args: ['install']
+    env: ['npm_config_platform=macos-arm64']
 
   # Install Node.js dependencies
-  - run: npm install --production
+  - name: 'node:14.16.0'
+    entrypoint: 'npm'
+    args: ['install']
+    env:
+      - 'NODE_ENV=production'
 
   # Create a tar archive of your code directory
-  - run: tar czvf geisapp.tar.gz .
+  - name: 'gcr.io/cloud-builders/tar'
+    args:
+      - 'czvf'
+      - 'geisapp.tar.gz'
+      - '.'
 
   # Upload the tar archive to Google Cloud Storage
-  - run: gsutil cp geisapp.tar.gz gs://invest-bucket/geisapp.tar.gz
+  - name: 'gcr.io/cloud-builders/gsutil'
+    args:
+      - 'cp'
+      - 'geisapp.tar.gz'
+      - 'gs://invest-bucket/geisapp.tar.gz'
 
   # Deploy container image to Cloud Run
-  - run: |
-      gcloud run deploy encertTrigger \
-      --source gs://invest-bucket/geisapp.tar.gz \
-      --platform=managed \
-      --region=us-central1 \
-      --allow-unauthenticated \
-      --port=8080 \
-      --machine-type=E2_HIGHCPU_8 \
-      --service-account=service@certus-0970.iam.gserviceaccount.com \
-      --logging=CLOUD_LOGGING_ONLY
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'encertTrigger'
+      - '--image=gcr.io/certus-0970/scrap:first'
+      - '--platform=managed'
+      - '--region=us-central1'
+      - '--allow-unauthenticated'
+      - '--port=8080'
+      - '--machine-type=E2_HIGHCPU_8'
+      - '--service-account=service@certus-0970.iam.gserviceaccount.com'
+      - '--logging=CLOUD_LOGGING_ONLY'
