@@ -38,4 +38,7 @@ steps:
       - '--port=8080'
       - '--machine-type=E2_HIGHCPU_8'
       - '--service-account=service@certus-0970.iam.gserviceaccount.com'
-      - '--logging=CLOUD_LOGGING_ONLY'
+    options:
+      - logging: CLOUD_LOGGING_ONLY
+      - build:
+          logs_bucket: cotizacion-fondos
