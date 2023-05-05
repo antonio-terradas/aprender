@@ -11,16 +11,10 @@ steps:
   # Upload the tar archive to Google Cloud Storage
   - run: gsutil cp geisapp.tar.gz gs://invest-bucket/geisapp.tar.gz
 
-  # Build and push container image to Google Container Registry
-  - run: docker build -t gcr.io/certus-0970/scrap:first .
-    timeout: '1200s'
-
-  - run: docker push gcr.io/certus-0970/scrap:first
-
   # Deploy container image to Cloud Run
   - run: |
       gcloud run deploy encertTrigger \
-      --image=gcr.io/certus-0970/scrap:first \
+      --source gs://invest-bucket/geisapp.tar.gz \
       --platform=managed \
       --region=us-central1 \
       --allow-unauthenticated \
