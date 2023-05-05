@@ -1,0 +1,30 @@
+steps:
+  # Install NPM packages
+  - run: npm install --platform=macos-arm64
+
+  # Install Node.js dependencies
+  - run: npm install --production
+
+  # Create a tar archive of your code directory
+  - run: tar czvf geisapp.tar.gz .
+
+  # Upload the tar archive to Google Cloud Storage
+  - run: gsutil cp geisapp.tar.gz gs://invest-bucket/geisapp.tar.gz
+
+  # Build and push container image to Google Container Registry
+  - run: docker build -t gcr.io/certus-0970/scrap:first .
+    timeout: '1200s'
+
+  - run: docker push gcr.io/certus-0970/scrap:first
+
+  # Deploy container image to Cloud Run
+  - run: |
+      gcloud run deploy encertTrigger \
+      --image=gcr.io/certus-0970/scrap:first \
+      --platform=managed \
+      --region=us-central1 \
+      --allow-unauthenticated \
+      --port=8080 \
+      --machine-type=E2_HIGHCPU_8 \
+      --service-account=service@certus-0970.iam.gserviceaccount.com \
+      --logging=CLOUD_LOGGING_ONLY
